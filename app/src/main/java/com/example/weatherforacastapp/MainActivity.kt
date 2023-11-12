@@ -2,6 +2,7 @@ package com.example.weatherforacastapp
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Looper
 import android.widget.Toast
@@ -21,7 +22,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
+import com.example.weatherforacastapp.constant.Const.Companion.permissions
+import com.example.weatherforacastapp.model.MyLatLng
 import com.example.weatherforacastapp.ui.theme.WeatherForacastAppTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -98,7 +101,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
 
-                    LocationScreen(currentLocation)
+                    LocationScreen(this@MainActivity, currentLocation)
                   }
             }
         }
@@ -110,19 +113,18 @@ class MainActivity : ComponentActivity() {
         val launcherMultiplePermissions = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissionMap ->
-            val areGranted = permissionMap.values.reduce{
-                accepted, next -> accepted && next
+            val areGranted = permissionMap.values.reduce { accepted, next ->
+                accepted && next
             }
             //check all permissions are accepted
-            if( areGranted) {
+            if (areGranted) {
                 locationRequired = true;
                 startLocationUpdate();
                 Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
-            }
-            else {
+            } else {
                 Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
             }
-
+        }
             val systemUiController = rememberSystemUiController()
             
             DisposableEffect(key1 = true, effect = {
@@ -134,11 +136,21 @@ class MainActivity : ComponentActivity() {
             
             LaunchedEffect(key1 = currentLocation, block = {
                 coroutineScope {
-                    if ()
+                    if (permissions.all {
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                it
+                            ) == PackageManager.PERMISSION_GRANTED
+                        }) {
+                        //if all permissions granted
+                        startLocationUpdate()
+                    } else {
+                        launcherMultiplePermissions.launch(permissions)
+                    }
                 }
             })
-        }
-        Text(text = "Hello")
+
+        Text(text = "${currentLocation.lat}/${currentLocation.lng}")
     }
 
     private fun initLocationClient() {
