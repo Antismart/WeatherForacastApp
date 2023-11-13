@@ -80,4 +80,6 @@ dependencies {
     implementation("com.github.Gurupreet:FontAwesomeCompose:1.0.0")
     //Full layout without status bar
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.33.1-alpha")
+    implementation("com.google.accompanist:accompanist-permissions:0.25.0")
+
 }
